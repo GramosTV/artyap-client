@@ -1,30 +1,17 @@
+<script setup lang="ts">
+import Nav from '@/components/Nav.vue';
+import { ref, provide } from 'vue';
+
+const randomizeEvent = ref(false);
+
+const triggerRandomize = () => {
+  randomizeEvent.value = !randomizeEvent.value; // Change value to notify listeners
+};
+
+provide('randomizeEvent', randomizeEvent);
+provide('triggerRandomize', triggerRandomize);
+</script>
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <Nav></Nav>
+  <router-view />
 </template>
-
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
-</style>

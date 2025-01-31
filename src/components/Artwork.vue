@@ -1,0 +1,142 @@
+<script setup lang="ts">
+import { Artwork } from '@/types/artwork';
+import { ref, onMounted, computed, defineProps } from 'vue';
+import { inject, watch } from 'vue';
+const props = defineProps<{
+  id?: number;
+}>();
+
+const artwork = ref<Artwork | null>(null);
+const image = ref<string | null>(null);
+const imageZoom = ref<string | null>(null);
+const imageUrl = computed(() => image.value || '');
+const imageZoomUrl = computed(() => imageZoom.value || '');
+const otherArtworks = ref<string[]>([]);
+const art_url = process.env.VUE_APP_ART_URL;
+
+const randomizeEvent = inject('randomizeEvent') as object;
+const fetchArtwork = async () => {
+  try {
+    const url = props.id ? `artwork/${props.id}` : 'random-artwork/';
+    const { data, other_artworks }: { data: Artwork; other_artworks: string[] } = await fetch(
+      `${process.env.VUE_APP_API_URL}/${url}`
+    ).then((res) => res.json());
+    console.log(other_artworks);
+    const { width } = await fetch(`${art_url}/${data.image_id}/info.json`).then((res) => res.json());
+    artwork.value = data;
+    otherArtworks.value = other_artworks;
+    image.value = `${art_url}/${data.image_id}/full/${width >= 843 ? 843 : width},/0/default.jpg`;
+    imageZoom.value = `${art_url}/${data.image_id}/full/${width},/0/default.jpg`;
+  } catch (error) {
+    console.error(error);
+  }
+};
+watch(randomizeEvent, fetchArtwork);
+
+onMounted(fetchArtwork);
+</script>
+
+<template>
+  <div v-if="artwork" class="container">
+    <!-- Left Side: Image & Description -->
+    <div class="left">
+      <div class="img-container">
+        <vue-image-zoomer
+          :regular="imageUrl"
+          :zoom="imageZoomUrl"
+          :zoom-amount="3"
+          :show-message="false"
+          :show-message-touch="false"
+          img-class="img"
+        >
+        </vue-image-zoomer>
+      </div>
+      <h2>{{ artwork?.title || 'Untitled' }}</h2>
+      <p class="description" v-if="artwork.description">{{ artwork.description }}</p>
+
+      <!-- Discussion Section -->
+      <div class="discussion">
+        <h3>Discussion</h3>
+        <!-- <ul>
+          <li v-for="comment in artwork.comments" :key="comment.id">
+            <strong>{{ comment.user }}:</strong> {{ comment.text }}
+          </li>
+        </ul> -->
+        <ul>
+          <li><strong>User1231:</strong> Yoo this is so cool man! Dope!</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Right Side: Artist Info -->
+    <div class="right">
+      <div class="artist-info">
+        <!-- <img :src="artwork.artist.avatar" class="avatar" /> -->
+        <h3>{{ artwork.artist?.title || 'Unknown Author' }}</h3>
+        <p v-if="typeof artwork.artist?.birth_date === 'number' || typeof artwork.artist?.death_date === 'number'">
+          {{ artwork.artist?.birth_date || '' }} - {{ artwork.artist?.death_date || '' }}
+        </p>
+        <p v-if="typeof artwork.artist?.description === 'string'">{{ artwork.artist?.description }}</p>
+      </div>
+      <ul>
+        <li v-for="artwork in otherArtworks" :key="artwork">
+          <img :src="`${art_url}/${artwork}/full/400,/0/default.jpg`" alt="" />
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+.container {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.left {
+  flex: 2;
+  margin-bottom: 20vh;
+  min-width: 843px;
+  h2 {
+    margin: 10px 0;
+    margin-bottom: 5px;
+  }
+  .description {
+    margin-bottom: 15px;
+  }
+}
+
+.right {
+  flex: 1;
+  background: $primary-color;
+  padding: 20px;
+  color: $text-color;
+  // border-radius: 10px;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+  ul {
+    list-style: none;
+    li {
+      margin: 10px 0;
+    }
+  }
+}
+
+.img-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+  width: max-content;
+  margin: 0 auto;
+}
+
+.artist-info {
+  text-align: center;
+  margin-bottom: 20px;
+}
+</style>

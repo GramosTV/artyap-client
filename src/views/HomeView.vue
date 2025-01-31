@@ -1,5 +1,8 @@
+<script setup lang="ts">
+import Artwork from '@/components/Artwork.vue';
+import Search from '@/components/Search.vue';
+</script>
+
 <template>
-  <div class="home">
-    <h1>This is a home page</h1>
-  </div>
+  <Search />
 </template>
