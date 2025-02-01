@@ -7,7 +7,7 @@ const hoveredIndex = ref(-3);
 const navItems = reactive([
   { name: 'Search', to: '/search', icon: 'fa-magnifying-glass' },
   { name: 'Random', to: '/random', icon: 'fa-dice-three' },
-  { name: 'Home', to: '/view' },
+  { name: 'Login', to: '/login', icon: 'fa-user' },
   { name: 'Home', to: '/home' },
   { name: 'Home', to: '/about' },
   { name: 'Home', to: '/view' },

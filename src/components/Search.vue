@@ -6,7 +6,7 @@ const results = ref<{ id: number; title: string }[]>([]);
 
 watch(inputValue, async (newValue) => {
   if (newValue) {
-    const { data } = await fetch(`${process.env.VUE_APP_API_URL}/search/?title=${newValue}`).then((res) => res.json());
+    const data = await fetch(`${process.env.VUE_APP_API_URL}/search/?title=${newValue}`).then((res) => res.json());
     results.value = data;
   } else {
     results.value = [];

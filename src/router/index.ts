@@ -17,6 +17,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'random',
     component: () => import('../views/RandomView.vue'),
   },
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('../views/LoginView.vue'),
+  },
 ];
 
 const router = createRouter({
