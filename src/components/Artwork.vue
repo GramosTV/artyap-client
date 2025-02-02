@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { Artwork } from '@/types/artwork';
+import { Comment } from '@/types/comment';
+import { getCsrf } from '@/utils/getCsrf';
+import axios from 'axios';
 import { ref, onMounted, computed, defineProps } from 'vue';
 import { inject, watch } from 'vue';
 const props = defineProps<{
@@ -12,17 +15,18 @@ const imageZoom = ref<string | null>(null);
 const imageUrl = computed(() => image.value || '');
 const imageZoomUrl = computed(() => imageZoom.value || '');
 const otherArtworks = ref<string[]>([]);
+const commentsRef = ref<Comment[]>([]);
 const art_url = process.env.VUE_APP_ART_URL;
-
+const newCommentText = ref<string>('');
+const userIsLoggedIn = ref<boolean>(true); // todo: handle logic
 const randomizeEvent = inject('randomizeEvent') as object;
 const fetchArtwork = async () => {
   try {
     const url = props.id ? `artwork/${props.id}` : 'random-artwork/';
-    const { data, other_artworks }: { data: Artwork; other_artworks: string[] } = await fetch(
-      `${process.env.VUE_APP_API_URL}/${url}`
-    ).then((res) => res.json());
-    console.log(other_artworks);
+    const { data, other_artworks, comments }: { data: Artwork; other_artworks: string[]; comments: Comment[] } =
+      await fetch(`${process.env.VUE_APP_API_URL}/${url}`).then((res) => res.json());
     const { width } = await fetch(`${art_url}/${data.image_id}/info.json`).then((res) => res.json());
+    commentsRef.value = comments;
     artwork.value = data;
     otherArtworks.value = other_artworks;
     image.value = `${art_url}/${data.image_id}/full/${width >= 843 ? 843 : width},/0/default.jpg`;
@@ -34,6 +38,39 @@ const fetchArtwork = async () => {
 watch(randomizeEvent, fetchArtwork);
 
 onMounted(fetchArtwork);
+
+const submitComment = async () => {
+  if (!newCommentText.value.trim()) {
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      `${process.env.VUE_APP_API_URL}/add-comment`,
+      {
+        text: newCommentText.value,
+        user: 'Anonymous',
+        artwork_id: artwork.value?.id,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': await getCsrf(),
+        },
+        withCredentials: true,
+      }
+    );
+
+    if (response.status === 200) {
+      commentsRef.value.push(response.data);
+      newCommentText.value = '';
+    } else {
+      console.error('Failed to submit comment');
+    }
+  } catch (error) {
+    console.error('Error submitting comment:', error);
+  }
+};
 </script>
 
 <template>
@@ -57,14 +94,17 @@ onMounted(fetchArtwork);
       <!-- Discussion Section -->
       <div class="discussion">
         <h3>Discussion</h3>
-        <!-- <ul>
-          <li v-for="comment in artwork.comments" :key="comment.id">
+        <ul>
+          <li v-for="comment in commentsRef" :key="comment.id">
             <strong>{{ comment.user }}:</strong> {{ comment.text }}
           </li>
-        </ul> -->
-        <ul>
-          <li><strong>User1231:</strong> Yoo this is so cool man! Dope!</li>
         </ul>
+
+        <!-- Add Comment Form -->
+        <div v-if="userIsLoggedIn" class="add-comment">
+          <textarea v-model="newCommentText" placeholder="Add a comment..." rows="4"></textarea>
+          <button @click="submitComment">Submit</button>
+        </div>
       </div>
     </div>
 

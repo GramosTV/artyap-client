@@ -1,31 +1,36 @@
 <script setup lang="ts">
 import { getCsrf } from '@/utils/getCsrf';
 import { ref } from 'vue';
-import axios from 'axios';
+
 const username = ref('');
+const email = ref('');
 const password = ref('');
+const repeatPassword = ref('');
 
 const onSubmit = async (e: Event) => {
   e.preventDefault();
   try {
     const csrf = await getCsrf();
-    const response = await axios.post(
-      `${process.env.VUE_APP_API_URL}/login`,
-      {
-        username: username.value,
-        password: password.value,
+    const response = await fetch(`${process.env.VUE_APP_API_URL}/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrf,
       },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrf,
-        },
-        withCredentials: true,
-      }
-    );
-    console.log('Login success:', response.data);
+      body: JSON.stringify({
+        username: username.value,
+        email: email.value,
+        password: password.value,
+      }),
+    });
+    if (!response.ok) {
+      console.error('Registration failed:', response.statusText);
+      return;
+    }
+    const data = await response.json();
+    console.log('Registration success:', data);
   } catch (error) {
-    console.error('Error during login:', error);
+    console.error('Error during registration:', error);
   }
 };
 </script>
@@ -33,22 +38,23 @@ const onSubmit = async (e: Event) => {
 <template>
   <div class="container">
     <form class="card" @submit="onSubmit">
-      <a class="login" @click.prevent>Log in</a>
+      <a class="register" @click.prevent>Register</a>
       <div class="inputBox">
         <input type="text" v-model="username" required />
         <span class="user">Username</span>
       </div>
-
+      <div class="inputBox">
+        <input type="email" v-model="email" required />
+        <span class="email">Email</span>
+      </div>
       <div class="inputBox">
         <input type="password" v-model="password" required />
         <span>Password</span>
       </div>
-
-      <button class="submit" type="submit">Login</button>
+      <button class="submit" type="submit">Register</button>
     </form>
   </div>
 </template>
-
 <style lang="scss" scoped>
 .container {
   display: flex;
@@ -70,7 +76,7 @@ const onSubmit = async (e: Event) => {
     border-radius: 8px;
     z-index: 9999;
     padding: 20px;
-    .login {
+    .register {
       color: $background-color;
       text-transform: uppercase;
       letter-spacing: 2px;
@@ -123,6 +129,11 @@ const onSubmit = async (e: Event) => {
       letter-spacing: 0.2em;
       color: #fefae0;
       border: 2px;
+    }
+
+    .inputBox input[type='email']:valid ~ span,
+    .inputBox input[type='email']:focus ~ span {
+      transform: translateX(150px) translateY(-15px);
     }
 
     .inputBox input:valid,
