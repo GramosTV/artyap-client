@@ -5,4 +5,5 @@ export interface Comment {
   parent?: number;
   text: string;
   created_at: string;
+  replies: Comment[];
 }

@@ -2,6 +2,7 @@
 import { Artwork } from '@/types/artwork';
 import { Comment } from '@/types/comment';
 import { getCsrf } from '@/utils/getCsrf';
+import CommentItem from '@/components/CommentItem.vue';
 import axios from 'axios';
 import { ref, onMounted, computed, defineProps } from 'vue';
 import { inject, watch } from 'vue';
@@ -49,7 +50,6 @@ const submitComment = async () => {
       `${process.env.VUE_APP_API_URL}/add-comment`,
       {
         text: newCommentText.value,
-        user: 'Anonymous',
         artwork_id: artwork.value?.id,
       },
       {
@@ -95,24 +95,12 @@ const submitComment = async () => {
       <div class="discussion">
         <h3>Discussion</h3>
         <ul>
-          <li v-for="comment in commentsRef" :key="comment.id">
-            <div>
-              <strong>{{ comment.user.username }}</strong>
-              <p>
-                {{
-                  new Date(comment.created_at).toLocaleString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    year: 'numeric',
-                    month: 'numeric',
-                    day: 'numeric',
-                  })
-                }}
-              </p>
-            </div>
-            <p>{{ comment.text }}</p>
-            <span>Reply</span>
-          </li>
+          <CommentItem
+            v-for="comment in commentsRef"
+            :key="comment.id"
+            :comment="comment"
+            :userIsLoggedIn="userIsLoggedIn"
+          />
         </ul>
 
         <!-- Add Comment Form -->
@@ -163,7 +151,7 @@ const submitComment = async () => {
     background-color: $text-color;
     color: $primary-color;
     padding: 15px;
-    margin-top: 15px;
+    margin-top: 40px;
     border-radius: 6px;
     box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
     h3 {
@@ -210,6 +198,9 @@ const submitComment = async () => {
           display: flex;
           justify-content: space-between;
           align-items: center;
+        }
+        p {
+          margin: 2px 0;
         }
         span {
           font-size: 0.8rem;
