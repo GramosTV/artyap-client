@@ -1,7 +1,7 @@
 export interface Comment {
   id: number;
   artwork: number;
-  user: number;
+  user: { username: string };
   parent?: number;
   text: string;
   created_at: string;

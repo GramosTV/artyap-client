@@ -162,5 +162,6 @@ const triggerRandomize = inject('triggerRandomize') as () => void;
   object-fit: contain;
   width: 100%;
   box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  border-radius: 8px;
 }
 </style>

@@ -96,14 +96,29 @@ const submitComment = async () => {
         <h3>Discussion</h3>
         <ul>
           <li v-for="comment in commentsRef" :key="comment.id">
-            <strong>{{ comment.user }}:</strong> {{ comment.text }}
+            <div>
+              <strong>{{ comment.user.username }}</strong>
+              <p>
+                {{
+                  new Date(comment.created_at).toLocaleString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                  })
+                }}
+              </p>
+            </div>
+            <p>{{ comment.text }}</p>
+            <span>Reply</span>
           </li>
         </ul>
 
         <!-- Add Comment Form -->
         <div v-if="userIsLoggedIn" class="add-comment">
-          <textarea v-model="newCommentText" placeholder="Add a comment..." rows="4"></textarea>
-          <button @click="submitComment">Submit</button>
+          <textarea v-model="newCommentText" placeholder="Add a comment..." rows="1"></textarea>
+          <button @click="submitComment"><i class="fa-regular fa-paper-plane"></i></button>
         </div>
       </div>
     </div>
@@ -144,8 +159,67 @@ const submitComment = async () => {
     margin: 10px 0;
     margin-bottom: 5px;
   }
-  .description {
-    margin-bottom: 15px;
+  .discussion {
+    background-color: $text-color;
+    color: $primary-color;
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 6px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+    h3 {
+      font-size: 1.5rem;
+    }
+    .add-comment {
+      display: flex;
+      textarea {
+        padding: 10px;
+        border-radius: 6px;
+        border-top-right-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border: 2px solid $secondary-color;
+        border-right: 0px;
+        background-color: $primary-color;
+        color: $text-color;
+        &:focus {
+          outline: none;
+        }
+      }
+      button {
+        padding: 10px;
+        border-radius: 12px;
+        border-top-left-radius: 0px;
+        border-bottom-left-radius: 0px;
+        cursor: pointer;
+        border: 2px solid $secondary-color;
+        background-color: $secondary-color;
+        color: $text-color;
+        transition: 0.2s;
+        &:hover {
+          color: $secondary-color;
+          background-color: $text-color;
+          transition: 0.2s;
+        }
+      }
+    }
+
+    ul {
+      list-style: none;
+      li {
+        margin: 10px 0;
+        div {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        span {
+          font-size: 0.8rem;
+          &:hover {
+            cursor: pointer;
+            text-decoration: underline;
+          }
+        }
+      }
+    }
   }
 }
 
