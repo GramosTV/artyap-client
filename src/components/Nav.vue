@@ -2,6 +2,11 @@
 import { ref, reactive, inject } from 'vue';
 // @ts-expect-error:next-line
 import box from '../assets/images/box.png';
+import { useAuthStore } from '@/stores/auth';
+
+const auth = useAuthStore();
+auth.fetchUser();
+// auth.isLoggedIn();
 
 const hoveredIndex = ref(-3);
 const navItems = reactive([
@@ -162,6 +167,7 @@ const triggerRandomize = inject('triggerRandomize') as () => void;
   object-fit: contain;
   width: 100%;
   box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
-  border-radius: 8px;
+  border-radius: 12px;
+  border: 3px solid $secondary-color;
 }
 </style>

@@ -108,6 +108,8 @@ const submitComment = async () => {
     border-right: 0px;
     background-color: $primary-color;
     color: $text-color;
+    field-sizing: content;
+    width: 320px;
     &:focus {
       outline: none;
     }

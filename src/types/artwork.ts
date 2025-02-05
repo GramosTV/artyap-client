@@ -4,6 +4,13 @@ export interface Artwork {
   image_id: string;
   description: string;
   artist: Artist;
+  material_titles: string;
+  technique_titles: string;
+  theme_titles: string;
+  section_titles: string;
+  place_of_origin: string;
+  date_start: number;
+  date_end: number;
 }
 
 export interface Artist {

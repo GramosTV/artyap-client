@@ -6,6 +6,10 @@ import CommentItem from '@/components/CommentItem.vue';
 import axios from 'axios';
 import { ref, onMounted, computed, defineProps } from 'vue';
 import { inject, watch } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+
+const auth = useAuthStore();
+auth.fetchUser();
 const props = defineProps<{
   id?: number;
 }>();
@@ -19,19 +23,30 @@ const otherArtworks = ref<string[]>([]);
 const commentsRef = ref<Comment[]>([]);
 const art_url = process.env.VUE_APP_ART_URL;
 const newCommentText = ref<string>('');
-const userIsLoggedIn = ref<boolean>(true); // todo: handle logic
+const country = ref<{ flags: { png: string } }>();
 const randomizeEvent = inject('randomizeEvent') as object;
+const fetchCountry = async (place: string) => {
+  try {
+    const data = await fetch(`https://restcountries.com/v3.1/name/${place}`).then((res) => res.json());
+    country.value = data[0];
+  } catch (err) {
+    console.error(err);
+  }
+};
 const fetchArtwork = async () => {
   try {
     const url = props.id ? `artwork/${props.id}` : 'random-artwork/';
     const { data, other_artworks, comments }: { data: Artwork; other_artworks: string[]; comments: Comment[] } =
       await fetch(`${process.env.VUE_APP_API_URL}/${url}`).then((res) => res.json());
     const { width } = await fetch(`${art_url}/${data.image_id}/info.json`).then((res) => res.json());
+    image.value = `${art_url}/${data.image_id}/full/${width >= 843 ? 843 : width},/0/default.jpg`;
+    imageZoom.value = `${art_url}/${data.image_id}/full/${width},/0/default.jpg`;
     commentsRef.value = comments;
     artwork.value = data;
     otherArtworks.value = other_artworks;
-    image.value = `${art_url}/${data.image_id}/full/${width >= 843 ? 843 : width},/0/default.jpg`;
-    imageZoom.value = `${art_url}/${data.image_id}/full/${width},/0/default.jpg`;
+    if (data.place_of_origin) {
+      await fetchCountry(data.place_of_origin);
+    }
   } catch (error) {
     console.error(error);
   }
@@ -90,6 +105,30 @@ const submitComment = async () => {
       </div>
       <h2>{{ artwork?.title || 'Untitled' }}</h2>
       <p class="description" v-if="artwork.description">{{ artwork.description }}</p>
+      <div class="country" v-if="country">
+        <p><b>Place of origin: </b> {{ artwork.place_of_origin }}</p>
+        <img :src="country.flags.png" alt="" />
+      </div>
+      <p v-if="typeof artwork.date_start === 'number' || typeof artwork.date_end === 'number'">
+        <b>Creation year{{ Math.abs(artwork.date_start - artwork.date_end) > 1 ? 's' : null }}:</b>
+        {{
+          Math.abs(artwork.date_start - artwork.date_end) > 1
+            ? `${artwork.date_start} - ${artwork.date_end}`
+            : artwork.date_start
+        }}
+      </p>
+      <p v-if="artwork.material_titles && JSON.parse(artwork.material_titles).length">
+        <b>Materials:</b> {{ JSON.parse(artwork.material_titles).join(', ') }}
+      </p>
+      <p v-if="artwork.technique_titles && JSON.parse(artwork.technique_titles).length">
+        <b>Techniques:</b> {{ JSON.parse(artwork.technique_titles).join(', ') }}
+      </p>
+      <p v-if="artwork.theme_titles && JSON.parse(artwork.theme_titles).length">
+        <b>Themes:</b> {{ JSON.parse(artwork.theme_titles).join(', ') }}
+      </p>
+      <p v-if="artwork.section_titles && JSON.parse(artwork.section_titles).length">
+        <b>Sections:</b> {{ JSON.parse(artwork.section_titles).join(', ') }}
+      </p>
 
       <!-- Discussion Section -->
       <div class="discussion">
@@ -99,12 +138,12 @@ const submitComment = async () => {
             v-for="comment in commentsRef"
             :key="comment.id"
             :comment="comment"
-            :userIsLoggedIn="userIsLoggedIn"
+            :userIsLoggedIn="auth.isLoggedIn()"
           />
         </ul>
 
         <!-- Add Comment Form -->
-        <div v-if="userIsLoggedIn" class="add-comment">
+        <div v-if="auth.isLoggedIn()" class="add-comment">
           <textarea v-model="newCommentText" placeholder="Add a comment..." rows="1"></textarea>
           <button @click="submitComment"><i class="fa-regular fa-paper-plane"></i></button>
         </div>
@@ -143,22 +182,38 @@ const submitComment = async () => {
   flex: 2;
   margin-bottom: 20vh;
   min-width: 843px;
+  p {
+    margin: 8px 0;
+  }
   h2 {
     margin: 10px 0;
     margin-bottom: 5px;
+  }
+  .country {
+    display: flex;
+    align-items: center;
+    p {
+      margin: 0;
+    }
+    img {
+      height: 16px;
+      margin-left: 5px;
+    }
   }
   .discussion {
     background-color: $text-color;
     color: $primary-color;
     padding: 15px;
-    margin-top: 40px;
+    margin-top: 30px;
     border-radius: 6px;
     box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+
     h3 {
       font-size: 1.5rem;
     }
     .add-comment {
       display: flex;
+      margin-top: 15px;
       textarea {
         padding: 10px;
         border-radius: 6px;
@@ -168,6 +223,8 @@ const submitComment = async () => {
         border-right: 0px;
         background-color: $primary-color;
         color: $text-color;
+        field-sizing: content;
+        width: 320px;
         &:focus {
           outline: none;
         }
