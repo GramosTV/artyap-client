@@ -13,7 +13,7 @@ const navItems = reactive([
   { name: 'Search', to: '/search', icon: 'fa-magnifying-glass' },
   { name: 'Random', to: '/random', icon: 'fa-dice-three' },
   { name: 'Login', to: '/login', icon: 'fa-user' },
-  { name: 'Home', to: '/home' },
+  { name: 'Trending', to: '/trending', icon: 'fa-fire' },
   { name: 'Home', to: '/about' },
   { name: 'Home', to: '/view' },
   { name: 'Home', to: '/home' },

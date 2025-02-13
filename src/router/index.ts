@@ -27,6 +27,11 @@ const routes: Array<RouteRecordRaw> = [
     name: 'register',
     component: () => import('../views/RegisterView.vue'),
   },
+  {
+    path: '/trending',
+    name: 'trending',
+    component: () => import('../views/TrendingView.vue'),
+  },
 ];
 
 const router = createRouter({

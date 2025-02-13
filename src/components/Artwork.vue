@@ -36,14 +36,19 @@ const fetchCountry = async (place: string) => {
 const fetchArtwork = async () => {
   try {
     const url = props.id ? `artwork/${props.id}` : 'random-artwork/';
+    const response = await fetch(`${process.env.VUE_APP_API_URL}/${url}`);
     const { data, other_artworks, comments }: { data: Artwork; other_artworks: string[]; comments: Comment[] } =
-      await fetch(`${process.env.VUE_APP_API_URL}/${url}`).then((res) => res.json());
-    const { width } = await fetch(`${art_url}/${data.image_id}/info.json`).then((res) => res.json());
+      await response.json();
+
+    const infoResponse = await fetch(`${art_url}/${data.image_id}/info.json`);
+    const { width } = await infoResponse.json();
+
     image.value = `${art_url}/${data.image_id}/full/${width >= 843 ? 843 : width},/0/default.jpg`;
     imageZoom.value = `${art_url}/${data.image_id}/full/${width},/0/default.jpg`;
     commentsRef.value = comments;
     artwork.value = data;
     otherArtworks.value = other_artworks;
+
     if (data.place_of_origin) {
       await fetchCountry(data.place_of_origin);
     }
@@ -225,6 +230,7 @@ const submitComment = async () => {
         color: $text-color;
         field-sizing: content;
         width: 320px;
+        resize: none;
         &:focus {
           outline: none;
         }
