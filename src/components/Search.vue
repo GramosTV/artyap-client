@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 
-const inputValue = ref('mon');
+const inputValue = ref('');
 const results = ref<{ id: number; title: string }[]>([]);
 
 watch(inputValue, async (newValue) => {
@@ -17,7 +17,7 @@ watch(inputValue, async (newValue) => {
 <template>
   <div class="container">
     <div class="form-control">
-      <input type="text" v-model="inputValue" required />
+      <input type="text" v-model="inputValue" placeholder="" required />
       <label>
         <span style="transition-delay: 0ms">S</span><span style="transition-delay: 50ms">e</span
         ><span style="transition-delay: 100ms">a</span><span style="transition-delay: 150ms">r</span

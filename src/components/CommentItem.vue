@@ -3,12 +3,22 @@ import { ref, defineProps } from 'vue';
 import { Comment } from '@/types/comment';
 import axios from 'axios';
 import { getCsrf } from '@/utils/getCsrf';
+import { useAuthStore } from '@/stores/auth';
+import router from '@/router';
+
+const auth = useAuthStore();
+auth.fetchUser();
+
 const props = defineProps<{ comment: Comment; userIsLoggedIn: boolean }>();
 
 const newCommentText = ref<string>('');
 const isReplying = ref(false);
 
 const toggleReply = () => {
+  if (!auth.isLoggedIn()) {
+    router.push({ path: '/login' });
+    return;
+  }
   isReplying.value = !isReplying.value;
 };
 
@@ -53,10 +63,10 @@ const submitComment = async () => {
       <p>{{ new Date(comment.created_at).toLocaleString() }}</p>
     </div>
     <p>{{ comment.text }}</p>
-    <span @click="toggleReply">Reply</span>
+    <span class="reply" @click="toggleReply">Reply</span>
 
     <div v-if="userIsLoggedIn && isReplying" class="add-comment">
-      <textarea v-model="newCommentText" placeholder="Add a comment..." rows="1"></textarea>
+      <textarea v-model="newCommentText" :placeholder="`Replying to: ${comment.user.username}`" rows="1"></textarea>
       <button @click="submitComment"><i class="fa-regular fa-paper-plane"></i></button>
     </div>
 
@@ -72,6 +82,11 @@ const submitComment = async () => {
   &.has-parent {
     border-left: 2px solid $primary-color;
     padding-left: 15px;
+  }
+  .reply {
+    cursor: pointer;
+    display: inline-block;
+    margin-top: 2px;
   }
   ul {
     list-style: none;
@@ -109,6 +124,7 @@ const submitComment = async () => {
     background-color: $primary-color;
     color: $text-color;
     field-sizing: content;
+    resize: none;
     width: 320px;
     &:focus {
       outline: none;

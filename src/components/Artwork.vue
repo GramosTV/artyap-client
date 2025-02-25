@@ -7,7 +7,7 @@ import axios from 'axios';
 import { ref, onMounted, computed, defineProps } from 'vue';
 import { inject, watch } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-
+import Loader from '@/components/Loader.vue';
 const auth = useAuthStore();
 auth.fetchUser();
 const props = defineProps<{
@@ -152,6 +152,9 @@ const submitComment = async () => {
           <textarea v-model="newCommentText" placeholder="Add a comment..." rows="1"></textarea>
           <button @click="submitComment"><i class="fa-regular fa-paper-plane"></i></button>
         </div>
+        <div v-else>
+          <router-link to="/login">Log in to join the discussion</router-link>
+        </div>
       </div>
     </div>
 
@@ -172,6 +175,9 @@ const submitComment = async () => {
       </ul>
     </div>
   </div>
+  <div class="loader-container" v-else>
+    <Loader />
+  </div>
 </template>
 
 <style lang="scss" scoped>
@@ -183,6 +189,13 @@ const submitComment = async () => {
   margin-top: 20px;
 }
 
+.loader-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .left {
   flex: 2;
   margin-bottom: 20vh;
@@ -213,9 +226,14 @@ const submitComment = async () => {
     border-radius: 6px;
     box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
 
+    a {
+      color: $primary-color;
+    }
+
     h3 {
       font-size: 1.5rem;
     }
+
     .add-comment {
       display: flex;
       margin-top: 15px;

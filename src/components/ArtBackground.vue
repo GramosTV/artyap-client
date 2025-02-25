@@ -7,7 +7,12 @@ const data = ref<Artwork | null>(null);
 onMounted(async () => {
   data.value = await fetch(`${process.env.VUE_APP_API_URL}/random-artwork`)
     .then((res) => res.json())
-    .then((data) => data.data);
+    .then((data) => {
+      if (data.data.title.length > 70) {
+        data.data.title = data.data.title.substring(0, 70) + '...';
+      }
+      return data.data;
+    });
 });
 </script>
 

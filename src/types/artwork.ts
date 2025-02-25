@@ -21,3 +21,11 @@ export interface Artist {
   death_date?: string;
   description?: string;
 }
+
+export interface TrendingArtwork {
+  id: string;
+  width: number;
+  height: number;
+  image_id: string;
+  image: string;
+}
