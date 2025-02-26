@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import router from '@/router';
 import { getCsrf } from '@/utils/getCsrf';
 import { ref } from 'vue';
+import { useToast } from 'vue-toastification';
+import axios from 'axios';
+const toast = useToast();
 
 const username = ref('');
 const email = ref('');
@@ -11,26 +15,37 @@ const onSubmit = async (e: Event) => {
   e.preventDefault();
   try {
     const csrf = await getCsrf();
-    const response = await fetch(`${process.env.VUE_APP_API_URL}/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrf,
-      },
-      body: JSON.stringify({
+    const response = await axios.post(
+      `${process.env.VUE_APP_API_URL}/register`,
+      {
         username: username.value,
         email: email.value,
         password: password.value,
-      }),
-    });
-    if (!response.ok) {
-      console.error('Registration failed:', response.statusText);
-      return;
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrf,
+        },
+      }
+    );
+    toast.success(response.data.message || 'Registered successfully');
+    router.push({ path: '/login' });
+  } catch (error: any) {
+    if (error.response?.data) {
+      const errors = error.response.data.error;
+      Object.keys(errors).forEach((field) => {
+        if (Array.isArray(errors[field])) {
+          errors[field].forEach((msg: string) => {
+            toast.error(`${msg}`);
+          });
+        } else {
+          toast.error(`${errors[field]}`);
+        }
+      });
+    } else {
+      toast.error('Registration failed');
     }
-    const data = await response.json();
-    console.log('Registration success:', data);
-  } catch (error) {
-    console.error('Error during registration:', error);
   }
 };
 </script>
@@ -55,6 +70,7 @@ const onSubmit = async (e: Event) => {
     </form>
   </div>
 </template>
+
 <style lang="scss" scoped>
 .container {
   display: flex;

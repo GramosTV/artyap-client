@@ -2,8 +2,12 @@
 import { getCsrf } from '@/utils/getCsrf';
 import { ref } from 'vue';
 import axios from 'axios';
+import { useToast } from 'vue-toastification';
+import router from '@/router';
+
 const username = ref('');
 const password = ref('');
+const toast = useToast();
 
 const onSubmit = async (e: Event) => {
   e.preventDefault();
@@ -23,9 +27,10 @@ const onSubmit = async (e: Event) => {
         withCredentials: true,
       }
     );
-    console.log('Login success:', response.data);
-  } catch (error) {
-    console.error('Error during login:', error);
+    toast.success(response.data.message || 'Logged in successfully');
+    router.push({ path: '/search' });
+  } catch (error: any) {
+    toast.error(error.response?.data?.error || 'Logging in');
   }
 };
 </script>
@@ -43,8 +48,10 @@ const onSubmit = async (e: Event) => {
         <input type="password" v-model="password" required />
         <span>Password</span>
       </div>
-
-      <button class="submit" type="submit">Login</button>
+      <div class="wrapper">
+        <button class="submit" type="submit">Login</button>
+        <p class="register-text">Dont have an account? <router-link to="/register">Register</router-link></p>
+      </div>
     </form>
   </div>
 </template>
@@ -77,6 +84,11 @@ const onSubmit = async (e: Event) => {
       display: block;
       font-weight: bold;
       font-size: x-large;
+    }
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .inputBox {
@@ -147,6 +159,15 @@ const onSubmit = async (e: Event) => {
 
     .submit:hover {
       transform: scale(1.05);
+    }
+
+    .register-text {
+      color: $background-color;
+      font-size: 0.9em;
+      a {
+        color: $background-color;
+        font-weight: 700;
+      }
     }
   }
 }
