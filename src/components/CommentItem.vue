@@ -60,7 +60,10 @@ const submitComment = async () => {
   <li v-if="comment" class="comment" :class="{ 'has-parent': comment.parent !== null }">
     <div class="comment-header">
       <strong>{{ comment.user.username }}</strong>
-      <p>{{ new Date(comment.created_at).toLocaleString() }}</p>
+      <strong>
+        {{ new Date(comment.created_at).toLocaleDateString() }}
+        {{ new Date(comment.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+      </strong>
     </div>
     <p>{{ comment.text }}</p>
     <span class="reply" @click="toggleReply">Reply</span>
@@ -83,10 +86,19 @@ const submitComment = async () => {
     border-left: 2px solid $primary-color;
     padding-left: 15px;
   }
+  .comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
   .reply {
     cursor: pointer;
     display: inline-block;
     margin-top: 2px;
+    &:hover {
+      cursor: pointer;
+      text-decoration: underline;
+    }
   }
   ul {
     list-style: none;
